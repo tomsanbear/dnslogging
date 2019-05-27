@@ -4,6 +4,7 @@ import (
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
 	"github.com/mholt/caddy"
+	"github.com/mholt/caddy/caddyfile"
 )
 
 // PluginName is the name of our plugin
@@ -31,10 +32,38 @@ func setup(c *caddy.Controller) error {
 	})
 
 	// Setup startup and shutdown behaviour
-	// c.OnStartup(func() error {
-	// })
-	// c.OnShutdown(func() error {
-	// })
+	c.OnShutdown(func() error {
+		dnslogging.Close()
+		return nil
+	})
 
 	return nil
+}
+
+func parseDNSLogging(c *caddy.Controller) (*DNSLogging, error) {
+	var (
+		dl  *DNSLogging
+		err error
+		i   int
+	)
+	if err != nil {
+		return dl, err
+	}
+
+	for c.Next() {
+		if i > 0 {
+			return nil, plugin.ErrOnce
+		}
+		i++
+		dl, err = parseDNSLoggingStanza(&c.Dispenser)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return dl, nil
+}
+
+func parseDNSLoggingStanza(c *caddyfile.Dispenser) (dl *DNSLogging, err error) {
+	return dl, err
 }
