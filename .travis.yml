@@ -10,6 +10,7 @@ git:
 before_script:
   - export GO111MODULE=on
   - go install github.com/golangci/golangci-lint/cmd/golangci-lint
+  - go mod vendor
 
 script:
   - golangci-lint run       
