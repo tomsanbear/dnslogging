@@ -28,7 +28,7 @@ func setup(c *caddy.Controller) error {
 	// Pass xpf plugin to our context
 	dnsserver.GetConfig(c).AddPlugin(func(next plugin.Handler) plugin.Handler {
 		dnslogging.Next = next
-		return dnslogging
+		return nil
 	})
 
 	// Setup startup and shutdown behaviour

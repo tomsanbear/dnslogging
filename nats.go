@@ -1,38 +1,75 @@
 package dnslogging
 
 import (
-	"fmt"
-
-	stan "github.com/nats-io/go-nats-streaming"
+	retry "github.com/avast/retry-go"
+	"github.com/coredns/coredns/request"
+	nats "github.com/nats-io/nats.go"
+	"github.com/tomsanbear/dnslogging/dnsproto"
+	capnp "zombiezen.com/go/capnproto2"
 )
 
-// NatsConfig is the required configuration for setting up the nats connection
-type NatsConfig struct {
-	natsurl   string
-	clusterid string
-	clientid  string
+type NatsClient struct {
+	conn    *nats.Conn
+	subject string
 }
 
-// ProcessNatsConfig takes in a config map and looks for the appropriate arguments to build the client with
-func ProcessNatsConfig(config map[string]string) (nc NatsConfig, err error) {
-	// Parse the URL
-	nc.natsurl = config["natsUrl"]
-	if nc.natsurl == "" {
-		nc.natsurl = stan.DefaultNatsURL
+// NewNatsClient returns a connected Nats Client
+func NewNatsClient(natsURL string) (_ *NatsClient, err error) {
+	nc := NatsClient{}
+	// Initial Connection loop
+	err = retry.Do(
+		func() error {
+			nc.conn, err = nats.Connect(natsURL)
+			return err
+		},
+		retry.DelayType(retry.BackOffDelay),
+		retry.OnRetry(func(n uint, err error) {
+			log.Errorf("nats: (attempt %v) %v", n+1, err)
+		}),
+	)
+	if err != nil {
+		return nil, err
+	}
+	log.Info("nats connection initialized...")
+	return &nc, nil
+}
+
+func (nc *NatsClient) Publish(state request.Request) error {
+	// Get our objects we need
+	msg, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
+	if err != nil {
+		return err
+	}
+	data, err := dnsproto.NewRootData(seg)
+	if err != nil {
+		return err
+	}
+	req, err := data.NewRequest()
+	if err != nil {
+		return err
+	}
+	questions, err := req.NewQuestion(int32(len(state.Req.Question)))
+	for i, question := range state.Req.Question {
+		questions.Set(i, question.String())
+	}
+	resp, err := data.NewResponse()
+	if err != nil {
+		return err
+	}
+	answers, err := resp.NewAnswers(int32(len(state.Resp.Answer)))
+	if err != nil {
+		return err
+	}
+	for i, answer := range state.Resp.Answer {
+		answers.Set(i, answer.String())
 	}
 
-	// Parse the clusterid
-	nc.clusterid = config["clusterId"]
-	if nc.clusterid == "" {
-		return nc, fmt.Errorf("clusterId was missing from configuration")
+	// Publish the bytes to the wire
+	mrshled, err := msg.Marshal()
+	if err != nil {
+		return err
 	}
+	err = nc.conn.Publish(nc.subject, mrshled)
 
-	// Parse the clientid
-	nc.clientid = config["clientId"]
-	if nc.clientid == "" {
-		return nc, fmt.Errorf("clientId was missing from configuration")
-	}
-
-	// Return the result
-	return nc, nil
+	return nil
 }

@@ -4,8 +4,11 @@ import (
 	"context"
 
 	"github.com/coredns/coredns/plugin"
+	clog "github.com/coredns/coredns/plugin/pkg/log"
 	"github.com/miekg/dns"
 )
+
+var log = clog.NewWithPlugin("dnslogging")
 
 // DNSLogging is our plugin struct. No configurations being persisted at this time
 type DNSLogging struct {
