@@ -20,9 +20,13 @@ func init() {
 func setup(c *caddy.Controller) error {
 
 	// Normal Setup
-	dnslogging, err := New()
+	dnslogging, err := parseDNSLogging(c)
 	if err != nil {
 		return plugin.Error(PluginName, err)
+	}
+	err = dnslogging.Initialize()
+	if err != nil {
+		return err
 	}
 
 	// Pass xpf plugin to our context
@@ -65,5 +69,27 @@ func parseDNSLogging(c *caddy.Controller) (*DNSLogging, error) {
 }
 
 func parseDNSLoggingStanza(c *caddyfile.Dispenser) (dl *DNSLogging, err error) {
+	dl, err = New()
+
+	// xpf stanza if present
+	for c.NextBlock() {
+		if err := parseDNSLoggingBlock(c, dl); err != nil {
+			return dl, err
+		}
+	}
+
 	return dl, err
+}
+
+func parseDNSLoggingBlock(c *caddyfile.Dispenser, dl *DNSLogging) error {
+	switch c.Val() {
+	case "nats_url":
+		if arg := c.NextArg(); !arg {
+			return c.Errf("missing rr_type argument")
+		}
+		dl.natsURL = c.Val()
+	default:
+		return c.Errf("unknown property '%s'", c.Val())
+	}
+	return nil
 }
