@@ -8,7 +8,7 @@ github.com/caddyserver/caddy/caddyfile
 github.com/caddyserver/caddy/telemetry
 # github.com/cenkalti/backoff v2.1.1+incompatible
 github.com/cenkalti/backoff
-# github.com/coredns/coredns v1.5.0 => github.com/tomsanbear/coredns v1.5.1-0.20190710194947-7fe93df26a46
+# github.com/coredns/coredns v1.5.2 => github.com/tomsanbear/coredns v1.5.1-0.20190704065049-f4a6bea4b414
 github.com/coredns/coredns/core/dnsserver
 github.com/coredns/coredns/plugin
 github.com/coredns/coredns/plugin/pkg/log
@@ -58,10 +58,6 @@ github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc
 github.com/klauspost/cpuid
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
-# github.com/mholt/caddy v1.0.0
-github.com/mholt/caddy
-github.com/mholt/caddy/caddyfile
-github.com/mholt/caddy/telemetry
 # github.com/mholt/certmagic v0.6.2-0.20190624175158-6a42ef9fe8c2
 github.com/mholt/certmagic
 # github.com/miekg/dns v1.1.15
@@ -92,8 +88,8 @@ github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 # golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 golang.org/x/crypto/ed25519
-golang.org/x/crypto/ed25519/internal/edwards25519
 golang.org/x/crypto/ocsp
+golang.org/x/crypto/ed25519/internal/edwards25519
 golang.org/x/crypto/pbkdf2
 # golang.org/x/net v0.0.0-20190628185345-da137c7871d7
 golang.org/x/net/ipv4
@@ -103,10 +99,10 @@ golang.org/x/net/trace
 golang.org/x/net/bpf
 golang.org/x/net/internal/iana
 golang.org/x/net/internal/socket
+golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/http2
 golang.org/x/net/http2/hpack
-golang.org/x/net/idna
 golang.org/x/net/http/httpguts
 # golang.org/x/sys v0.0.0-20190626221950-04f50cda93cb
 golang.org/x/sys/unix

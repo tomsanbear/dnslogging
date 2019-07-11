@@ -12,9 +12,8 @@ import (
 
 // Request contains some connection state and is useful in plugin.
 type Request struct {
-	Req  *dns.Msg
-	Resp *dns.Msg
-	W    dns.ResponseWriter
+	Req *dns.Msg
+	W   dns.ResponseWriter
 
 	// Optional lowercased zone of this query.
 	Zone string

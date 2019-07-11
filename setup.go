@@ -1,10 +1,10 @@
 package dnslogging
 
 import (
+	"github.com/caddyserver/caddy"
+	"github.com/caddyserver/caddy/caddyfile"
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
-	"github.com/mholt/caddy"
-	"github.com/mholt/caddy/caddyfile"
 )
 
 // PluginName is the name of our plugin
