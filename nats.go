@@ -2,7 +2,7 @@ package dnslogging
 
 import (
 	retry "github.com/avast/retry-go"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/dns"
 	nats "github.com/nats-io/nats.go"
 	"github.com/tomsanbear/dnslogging/dnsproto"
 	capnp "zombiezen.com/go/capnproto2"
@@ -34,38 +34,38 @@ func NewNatsClient(natsURL string) (_ *NatsClient, err error) {
 	return &nc, nil
 }
 
-func (nc *NatsClient) Publish(state request.Request) error {
+func (nc *NatsClient) Publish(req *dns.Msg, resp *dns.Msg) error {
 	// Get our objects we need
 	msg, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
 	if err != nil {
 		return err
 	}
-	data, err := dnsproto.NewRootData(seg)
+	pdata, err := dnsproto.NewRootData(seg)
 	if err != nil {
 		return err
 	}
-	req, err := data.NewRequest()
+	preq, err := pdata.NewRequest()
 	if err != nil {
 		return err
 	}
-	questions, err := req.NewQuestion(int32(len(state.Req.Question)))
-	for i, question := range state.Req.Question {
-		questions.Set(i, question.String())
+	pquestions, err := preq.NewQuestion(int32(len(req.Question)))
+	for i, question := range req.Question {
+		pquestions.Set(i, question.String())
 	}
-	resp, err := data.NewResponse()
+	presp, err := pdata.NewResponse()
 	if err != nil {
 		return err
 	}
-	answers, err := resp.NewAnswers(int32(len(state.Resp.Answer)))
+	panswers, err := presp.NewAnswers(int32(len(resp.Answer)))
 	if err != nil {
 		return err
 	}
-	for i, answer := range state.Resp.Answer {
-		answers.Set(i, answer.String())
+	for i, answer := range resp.Answer {
+		panswers.Set(i, answer.String())
 	}
 
 	// Publish the bytes to the wire
-	mrshled, err := msg.Marshal()
+	mrshled, err := msg.Marshal() 
 	if err != nil {
 		return err
 	}
@@ -73,3 +73,4 @@ func (nc *NatsClient) Publish(state request.Request) error {
 
 	return nil
 }
+ 

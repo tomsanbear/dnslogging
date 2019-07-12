@@ -10,7 +10,6 @@ require (
 	github.com/nats-io/nats-server/v2 v2.0.0 // indirect
 	github.com/nats-io/nats.go v1.8.1
 	github.com/stretchr/testify v1.3.0
+	github.com/tomsanbear/recorder v0.0.0-20190712150622-86589c784c50
 	zombiezen.com/go/capnproto2 v2.17.0+incompatible
 )
-
-replace github.com/coredns/coredns => github.com/tomsanbear/coredns v1.5.1-0.20190710194947-7fe93df26a46
