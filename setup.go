@@ -29,7 +29,7 @@ func setup(c *caddy.Controller) error {
 		return err
 	}
 
-	// Pass xpf plugin to our context
+	// Pass dnslogging plugin to our context
 	dnsserver.GetConfig(c).AddPlugin(func(next plugin.Handler) plugin.Handler {
 		dnslogging.Next = next
 		return nil
@@ -50,9 +50,6 @@ func parseDNSLogging(c *caddy.Controller) (*DNSLogging, error) {
 		err error
 		i   int
 	)
-	if err != nil {
-		return dl, err
-	}
 
 	for c.Next() {
 		if i > 0 {
@@ -85,9 +82,20 @@ func parseDNSLoggingBlock(c *caddyfile.Dispenser, dl *DNSLogging) error {
 	switch c.Val() {
 	case "nats_url":
 		if arg := c.NextArg(); !arg {
-			return c.Errf("missing rr_type argument")
+			return c.Errf("missing nats_url argument")
 		}
 		dl.natsURL = c.Val()
+	case "kafka_brokers":
+		if arg := c.NextArg(); !arg {
+			return c.Errf("missing kafka_brokers arguments")
+		}
+		dl.kafkaBrokers = c.RemainingArgs()
+		// TODO: Validate the brokers that are passed in
+	case "kafka_topic":
+		if arg := c.NextArg(); !arg {
+			return c.Errf("missing kafka_topic argument")
+		}
+		dl.kafkaTopic = c.Val()
 	default:
 		return c.Errf("unknown property '%s'", c.Val())
 	}

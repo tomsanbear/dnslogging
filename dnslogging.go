@@ -14,8 +14,14 @@ var log = clog.NewWithPlugin("dnslogging")
 
 // DNSLogging is our plugin struct. No configurations being persisted at this time
 type DNSLogging struct {
+	// Nats configuration
 	nc      *NatsClient
 	natsURL string
+
+	// Kafka configuration
+	kc           *KafkaClient
+	kafkaBrokers []string
+	kafkaTopic   string
 
 	Next plugin.Handler
 }
@@ -29,12 +35,24 @@ func New() (*DNSLogging, error) {
 
 // Initialize handles the initial connection to the nats server.
 func (dl *DNSLogging) Initialize() (err error) {
-	log.Info("initializing the nats client")
-	dl.nc, err = NewNatsClient(dl.natsURL)
-	if err != nil {
-		return err
+	// Nats initialization
+	if dl.natsURL != "" {
+		log.Info("initializing the nats client")
+		dl.nc, err = NewNatsClient(dl.natsURL)
+		if err != nil {
+			return err
+		}
 	}
-	log.Info("nats client was initialized")
+
+	// Kafka Initialization
+	if dl.kafkaBrokers != nil && dl.kafkaTopic != "" {
+		log.Info("initializing the kafka client")
+		dl.kc, err = NewKafkaClient(dl.kafkaBrokers, dl.kafkaTopic)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -44,10 +62,30 @@ func (dl *DNSLogging) Name() string { return "dnslogging" }
 // ServeDNS is doing the forwarding, this call can, and will fail since DNS resolution to the client should have succeeded by now
 func (dl *DNSLogging) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (rc int, err error) {
 	// This plugin is only valid when used in conjunction with the recorder plugin provided at github.com/tomsanbear/recorder
+	// TODO: make this smart to recognize when we have access to the response object
 	recw := w.(*recorder.RecorderWriter)
-	err = dl.nc.Publish(r, recw.Msg())
-	if err != nil {
-		return rc, err
+	if recw == nil {
+		return rc, &Error{"invalid writer used, unable to extract response"}
+	}
+
+	// Formulate the log
+	log := &Log{
+		Req:  r,
+		Resp: recw.Msg(),
+	}
+
+	// Publish to whatever available streaming services we have
+	if dl.nc != nil {
+		err = dl.nc.Publish(log)
+		if err != nil {
+			return rc, err
+		}
+	}
+	if dl.kc != nil {
+		err = dl.kc.Publish(log)
+		if err != nil {
+			return rc, err
+		}
 	}
 	return rc, err
 }
@@ -56,7 +94,10 @@ func (dl *DNSLogging) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns
 func (dl *DNSLogging) Close() {
 	// Drain the connection
 	clog.Info("draining the Nats client")
-	dl.nc.conn.Drain()
+	err := dl.nc.conn.Drain()
+	if err != nil {
+		log.Warning("nats: ", err)
+	}
 
 	// Close the connection
 	clog.Info("closing the Nats client")

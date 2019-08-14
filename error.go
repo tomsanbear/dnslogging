@@ -1,6 +1,6 @@
 package dnslogging
 
-// Error type for the xpf plugin
+// Error type for the dns logging plugin
 type Error struct{ err string }
 
 func (e *Error) Error() string {

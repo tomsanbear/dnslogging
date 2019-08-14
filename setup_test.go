@@ -8,19 +8,18 @@ import (
 )
 
 func TestSetup(t *testing.T) {
-
 	tests := []struct {
 		input      string
 		shouldErr  bool
 		expNatsURL string
 	}{
 		// positive
-		{`xpf {
+		{`dnslogging {
 			nats_url nats://1.2.3.4:5222
 		}`, false, "nats://1.2.3.4:5222"},
-		{`xpf`, false, "nats://127.0.0.1:4222"},
+		{`dnslogging`, false, "nats://127.0.0.1:4222"},
 		// negative
-		{`xpf {
+		{`dnslogging {
 			nats_url
 		}`, true, ""},
 	}

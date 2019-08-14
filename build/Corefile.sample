@@ -1,0 +1,8 @@
+.:53 {
+    recorder
+    forward . 8.8.8.8
+    dnslogging {
+        kafka_brokers 127.0.0.1:9092
+        kafka_topic test_topic
+    }
+}
