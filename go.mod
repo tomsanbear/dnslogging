@@ -12,5 +12,4 @@ require (
 	github.com/segmentio/kafka-go v0.3.2
 	github.com/stretchr/testify v1.3.0
 	github.com/tomsanbear/recorder v0.0.0-20190712150622-86589c784c50
-	zombiezen.com/go/capnproto2 v2.17.0+incompatible // indirect
 )
