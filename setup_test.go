@@ -17,7 +17,7 @@ func TestSetup(t *testing.T) {
 		{`dnslogging {
 			nats_url nats://1.2.3.4:5222
 		}`, false, "nats://1.2.3.4:5222"},
-		{`dnslogging`, false, "nats://127.0.0.1:4222"},
+		{`dnslogging`, false, ""},
 		// negative
 		{`dnslogging {
 			nats_url

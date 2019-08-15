@@ -6,7 +6,6 @@ import (
 	"github.com/coredns/coredns/plugin"
 	clog "github.com/coredns/coredns/plugin/pkg/log"
 	"github.com/miekg/dns"
-	nats "github.com/nats-io/nats.go"
 	"github.com/tomsanbear/recorder"
 )
 
@@ -28,9 +27,7 @@ type DNSLogging struct {
 
 // New creates a new instance of the DNSLogging type
 func New() (*DNSLogging, error) {
-	return &DNSLogging{
-		natsURL: nats.DefaultURL,
-	}, nil
+	return &DNSLogging{}, nil
 }
 
 // Initialize handles the initial connection to the nats server.
