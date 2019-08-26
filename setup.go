@@ -32,7 +32,7 @@ func setup(c *caddy.Controller) error {
 	// Pass dnslogging plugin to our context
 	dnsserver.GetConfig(c).AddPlugin(func(next plugin.Handler) plugin.Handler {
 		dnslogging.Next = next
-		return nil
+		return dnslogging
 	})
 
 	// Setup startup and shutdown behaviour
